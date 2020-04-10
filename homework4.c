@@ -16,16 +16,16 @@ int main(void)
     //       To begin, configure the UART for 9600 baud, 8-bit payload (LSB first), no parity, 1 stop bit.
     eUSCI_UART_ConfigV1 uartConfig =
     {
+     EUSCI_A_UART_MODE,
+     EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION,
+     EUSCI_A_UART_8_BIT_LEN,
      EUSCI_A_UART_CLOCKSOURCE_SMCLK,
      19,
      8,
      0x55,
      EUSCI_A_UART_NO_PARITY,
      EUSCI_A_UART_LSB_FIRST,
-     EUSCI_A_UART_ONE_STOP_BIT,
-     EUSCI_A_UART_MODE,
-     EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION,
-     EUSCI_A_UART_8_BIT_LEN
+     EUSCI_A_UART_ONE_STOP_BIT
     };
 
     // TODO: Make sure Tx AND Rx pins of EUSCI_A0 work for UART and not as regular GPIO pins.
@@ -43,6 +43,9 @@ int main(void)
         // TODO: Check the receive interrupt flag to see if a received character is available.
         //       Return 0xFF if no character is available.
         if*UART_getInterruptStatus(EUSCI_A0_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG) == EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
+        {
+            EUSCI_A_UART_transmitData(EUSCI_A0_BASE,0xFF);
+        }
 
 
         // TODO: If an actual character was received, echo the character to the terminal AND use it to update the FSM.
@@ -58,7 +61,10 @@ int main(void)
         // TODO: If the FSM indicates a successful string entry, transmit the response string.
         //       Check the transmit interrupt flag prior to transmitting each character and moving on to the next one.
         //       Make sure to reset the success variable after transmission.
-
+        if*UART_gettransmit(EUSCI_A0_BASE, EUSCI_A_UART_RECEIVE_TRANSMIT) == EUSCI_A_UART_RECEIVE_TRANSMIT)
+        {
+            EUSCI_A_UART_TRANSMIT(responce);
+        }
 
     }
 }
@@ -86,7 +92,10 @@ void initBoard()
 bool charFSM(char rChar)
 {
     bool finished = false;
-
-
-    return finished;
+    int receiveByte;
+    receiveByte = UART_receiveData(EUSCI_A0_BASE);
+    if (receiveByte == rChar)
+        return true;
+    else
+        return finished;
 }
